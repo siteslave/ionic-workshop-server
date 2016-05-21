@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var cors = require('cors');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -19,8 +20,31 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+// for large json
+app.use(bodyParser.json({ limit: '5mb' }));
+app.use(cors());
+
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+/* Create Connection */
+var db = require('knex')({
+  client: 'mysql',
+  connection: {
+    host: 'localhost',
+    port: 3306,
+    database: 'hdc',
+    user: 'hdc',
+    password: 'hdc'
+  }
+});
+
+app.use(function (req, res, next) {
+  req.db = db;
+  next();
+});
+
+/** End MySQL Connection */
 
 app.use('/', routes);
 app.use('/users', users);
